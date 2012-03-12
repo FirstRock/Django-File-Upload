@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+    {{ message }}
+    <div>File upload form</div>
+    <form id="form_upload" action="/upload/" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" id="file" class="file">
+        <input type="hidden" name="file_name" id="file_name">
+        <input type="button" name="file_select" id="file_select" value="Выбрать файл">&nbsp;
+        <span id="file_text" class="file_text"></span>&nbsp;
+        <input id="file_submit" type="submit" value="Загрузить">&nbsp;
+        <img src="{{ STATIC_URL }}img/ajax-loader.gif" id="file_loading">
+    </form>
+    <style>
+        .file {
+            position: absolute;
+            background: transparent;
+            border: 0;
+            opacity: 0;
+            -moz-opacity: 0;
+            filter: progid:DXImageTransform.Microsoft.Alpha(opacity=0);
+            z-index: 999;
+        }
+    </style>
+    <script>
+        $(document).ready(function(){
+            $( '#file_select, #file_submit, #file' ).button();
+            $( '#file_submit' ).hide();
+            $( '#file_loading' ).hide();
+            $( '#file' )
+                    .width($( '#file_select' ).width())
+                    .height($( '#file_select' ).height());
+        })
+        $( '#file' ).mousedown( function(){
+            $( '#file_select' ).addClass('ui-state-active');
+        });
+        $( '#file' ).mouseup( function(){
+            $( '#file_select' ).removeClass('ui-state-active');
+        });
+        $( '#file' ).mousemove( function(){
+            $( '#file_select' ).addClass('ui-state-hover');
+        });
+        $( '#file' ).mouseleave( function(){
+            $( '#file_select' ).removeClass('ui-state-hover');
+        })
+        $( '#file' ).change( function(){
+            if ($( '#file' ).val()=='')
+                $( '#file_submit' ).hide();
+            else
+                $( '#file_submit' ).show();
+            $( '#file_text' ).html( $( '#file' ).val() );
+            $( '#file_name' ).val( $( '#file' ).val() );
+        });
+        $( '#file_submit' ).click( function(){
+            var options = {
+                success: function(){
+                    $( '#file' ).val('');
+                    $( '#file_submit' ).hide();
+                    $( '#file_loading' ).hide();
+                    $( '#file_text' ).html( '' );
+                    $( '#file_name' ).val( '' );
+                },
+                beforeSubmit: function(){
+                    $( '#file_loading' ).show();
+                },
+                error: function(){
+                    $( '#file_text' ).html( 'Ошибка загрузки' );
+                    $( '#file_loading' ).hide();
+                }
+            }
+            $( '#form_upload' ).ajaxSubmit(options);
+            return false;
+        });
+    </script>
+{% endblock %}
